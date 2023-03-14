@@ -1,4 +1,3 @@
-from python_aternos import Client
 from python_aternos import *
 import platform
 import os
