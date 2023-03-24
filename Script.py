@@ -1,21 +1,45 @@
+
+# TODO list
+# - implementare classi
+# 
+# 
+# 
+# #
+
+
+
 from python_aternos import *
 import platform
 import os
 
 #-----------------------------------------------------------------------------------------------------------------------------------
 
-#Funzione che permette di effettuare l'avvio di un server selezionandolo dalla listi di server che viene restituita dall'API
-# #
+def getSystemTool():
+    if "Linux" in platform.platform():
+        return lambda: os.system('clear')
+    else:
+        return lambda: os.system('cls')
 
-def boot():
-    clear()
+#-----------------------------------------------------------------------------------------------------------------------------------
+
+def getServers(user):
+    return user.list_servers()
+
+#-----------------------------------------------------------------------------------------------------------------------------------
+
+def getMenu():
+    print("Benvenuto, seleziona una delle funzioni")
+    print("- avvia : Avvia il server")
+    print("- spegni : Spegne il server")
+    print("- logout : Effettua il logout dal tuo account")
+    print("- esci : Esci dal programma")
+
+#-----------------------------------------------------------------------------------------------------------------------------------
+
+def getStatusMenu():
     i = 0
-    
-    #Ciclo la lista di server ed in base allo stato del singolo server (informazione prelevata sempre dalle API) elenco tutti quelli
-    #disponibili e mostro a video lo stato di ogniuno di essi
-    # #
     for server in servers:
-        print(server.status)
+        server.fetch()
         if server.status == 'offline':
             print("Id server: "+str(i)+' - Indirizzo del server: '+server.domain + " !!! SPENTO !!!") 
         elif server.status == 'starting':
@@ -25,6 +49,19 @@ def boot():
         elif server.status == 'online':
             print("Id server: "+str(i)+' - Indirizzo del server: '+server.domain+ " !!! AVVIATO !!!")
         i += 1
+
+#-----------------------------------------------------------------------------------------------------------------------------------
+
+#Funzione che permette di effettuare l'avvio di un server selezionandolo dalla listi di server che viene restituita dall'API
+# #
+
+def boot():
+    clear()
+    
+    #Ciclo la lista di server ed in base allo stato del singolo server (informazione prelevata sempre dalle API) elenco tutti quelli
+    #disponibili e mostro a video lo stato di ogniuno di essi
+    # #
+    getStatusMenu()
     print("Per annullare l'operazione di avvio inserisci un qualunque numero non presente nella lista")
     print("--\n  |\n  V")
     
@@ -46,7 +83,7 @@ def boot():
         servers[idOfServer].start()
         clear()
         print("Avvio del server: "+servers[idOfServer].software+"\nVersione: "+ servers[idOfServer].version)
-        activeServers.append(server.domain)
+        activeServers.append(servers[idOfServer].domain)
         input("Premi ENTER per continuare")
     except ServerStartError as error:
         print("Non è stato possibile avvviare il server, le cause possibili sono: "
@@ -63,23 +100,12 @@ def boot():
     except:
         print("")
 
-
 #-----------------------------------------------------------------------------------------------------------------------------------
 
 def shut():
     clear()
     i = 0
-    for server in servers:
-        if server.status == 'offline':
-            print("Id server: "+str(i)+' - Indirizzo del server: '+server.domain) 
-        elif server.status == 'starting':
-            print("Id server: "+str(i)+' - Indirizzo del server: '+server.domain+ " !!! INIZIALIZZAZIONE !!!") 
-        elif server.status == 'loading':
-            print("Id server: "+str(i)+' - Indirizzo del server: '+server.domain+ " !!! CARICAMENTO !!!") 
-        elif server.status == 'online':
-            print("Id server: "+str(i)+' - Indirizzo del server: '+server.domain+ " !!! AVVIATO !!!")
-        i += 1
-        
+    getStatusMenu()        
     try:
         serverToShut = int(input("Inserisci l'ID del server che si vuole spegere: "))
     except ValueError:
@@ -96,12 +122,11 @@ def shut():
     except NameError:
         print("")
 
-#-------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------------------------------
 
 def logout():
     open('user_data.txt','w+').close()
     print("Il logout comporta l'uscita dall'applicazione")
-
 
 #-----------------------------------------------------------------------------------------------------------------------------------
 
@@ -129,17 +154,9 @@ def login():
                 error = True
                 clear()
         return user
-
-
+    
 #-----------------------------------------------------------------------------------------------------------------------------------
 
-def getSystemTool():
-    if "Linux" in platform.platform():
-        return lambda: os.system('clear')
-    else:
-        return lambda: os.system('cls')
-        
-#-----------------------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
     
     clear = getSystemTool()
@@ -149,13 +166,11 @@ if __name__ == '__main__':
     activeServers = []
     index = ''
     while(index != 'esci'):
+        #Ottenimento dei server
         clear()
-        servers = user.list_servers()
-        print("Benvenuto, seleziona una delle funzioni")
-        print("- avvia : Avvia il server")
-        print("- spegni : Spegne il server")
-        print("- logout : Effettua il logout dal tuo account")
-        print("- esci : Esci dal programma")
+        servers = getServers(user)
+        #Menu delle funzioni
+        getMenu()
         index = input("Selezione l'operazione desiderata: ")
         if(index == 'avvia'):
             boot()
